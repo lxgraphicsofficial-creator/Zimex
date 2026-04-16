@@ -1,0 +1,21 @@
+{
+  "name": "zimsoftfx",
+  "short_name": "zimsoftfx",
+  "description": "no",
+  "start_url": "http://zimfxapp.free.nf/?i=1",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#F8FAFC",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FFFFFF'/%3E%3Cpath d='M30 50 L50 30 L70 50 M50 30 L50 70' stroke='%233B82F6' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "id": "zimsoftfx",
+  "orientation": "portrait",
+  "categories": [
+    "finance"
+  ]
+}
