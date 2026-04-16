@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zimsoft X Normal</title>
+    
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#F8FAFC">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link id="manifest-link" rel="manifest">
+
+    <style>
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#F8FAFC',        /* Light Gray/Blue background */
+                        card: '#FFFFFF',      /* White cards */
+                        primary: '#10B981',   /* Emerald Green */
+                        primaryDark: '#059669',
+                        secondary: '#3B82F6', /* Blue */
+                        danger: '#EF4444',    /* Red */
+                        dangerDark: '#DC2626',
+                        warning: '#F59E0B',   /* Amber */
+                        textmain: '#0F172A',  /* Slate 900 */
+                        textdim: '#64748B',   /* Slate 500 */
+                        bordercol: '#E2E8F0'  /* Slate 200 */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'premium': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+                        'premium-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        body {
+            background-color: #F8FAFC;
+            color: #0F172A;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            overscroll-behavior-y: none; /* Prevent pull-to-refresh on app feel */
+        }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+
+        /* Smooth Transitions */
+        * { transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s; }
+
+        /* Native Checkbox Styling */
+        .check-wrap { cursor: pointer; display: block; }
+        .check-wrap input { display: none; }
+        .check-ui {
+            width: 24px; height: 24px;
+            border: 2px solid #CBD5E1;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            background: #F1F5F9;
+        }
+        .check-wrap input:checked + .check-ui {
+            background: #10B981; border-color: #10B981;
+        }
+        .check-wrap input:checked + .check-ui i { opacity: 1 !important; }
+        
+        .check-row {
+            border: 1px solid #E2E8F0;
+            background: #FFFFFF;
+        }
+        .check-wrap input:checked ~ .check-row {
+            border-color: #10B981;
+            background: #ECFDF5;
+        }
+
+        /* Radio Buttons for Setup */
+        .setup-radio { display: none; }
+        .setup-label {
+            border: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            color: #64748B;
+            cursor: pointer;
+        }
+        .setup-radio:checked + .setup-label {
+            border-color: #3B82F6;
+            color: #1D4ED8;
+            background: #EFF6FF;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Modals */
+        .modal-overlay {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: scale(0.95); transition: transform 0.3s; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        /* Toast */
+        #toast {
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Tab Content */
+        .tab-content { display: none; animation: slideUp 0.3s ease-out forwards; }
+        .tab-content.active { display: block; }
+        
+        /* Bottom Nav Active State */
+        .nav-btn.active { color: #3B82F6; }
+        .nav-btn.active .nav-indicator { opacity: 1; transform: scale(1); }
+    </style>
+</head>
+<body class="antialiased flex justify-center selection:bg-secondary selection:text-white">
+
+    <!-- App Container -->
+    <div class="w-full max-w-md min-h-screen relative flex flex-col bg-bg shadow-2xl overflow-hidden">
+
+        <!-- ================= LOGIN SCREEN ================= -->
+        <div id="loginScreen" class="absolute inset-0 bg-bg z-[60] flex flex-col items-center justify-center p-6 transition-opacity duration-300">
+            <div class="w-full max-w-sm space-y-8 animate-slide-up">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-card rounded-3xl mx-auto flex items-center justify-center border border-bordercol mb-6 shadow-premium">
+                        <i data-lucide="activity" class="w-10 h-10 text-secondary"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold tracking-tight text-textmain">Zimsoft <span class="text-secondary">X</span> Normal</h1>
+                    <p class="text-textdim mt-2 font-medium">Synthetic Indices Terminal</p>
+                </div>
+                
+                <div class="bg-card p-6 rounded-2xl border border-bordercol shadow-premium-lg">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-textdim mb-1">Access Key</label>
+                            <input type="password" id="loginPassword" placeholder="Enter password..." class="w-full bg-bg border border-bordercol rounded-xl px-4 py-3 text-textmain focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all">
+                        </div>
+                        <button id="loginBtn" class="w-full bg-textmain text-white font-bold rounded-xl px-4 py-3 hover:bg-opacity-90 active:scale-[0.98] transition-all shadow-md">
+                            ENTER TERMINAL
+                        </button>
+                        <p id="loginError" class="text-danger text-sm text-center hidden font-medium">Access Denied. Incorrect key.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= APP HEADER ================= -->
+        <header class="bg-card border-b border-bordercol px-5 py-4 sticky top-0 z-20 shadow-sm hidden" id="appHeader">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-md uppercase tracking-wider">Level <span id="lvlNumber">1</span></span>
+                        <span id="streakBadge" class="text-xs font-bold px-2 py-1 bg-amber-100 text-amber-700 rounded-md flex items-center gap-1 hidden">
+                            <i data-lucide="flame" class="w-3 h-3"></i> <span id="streakCount">0</span>
+                        </span>
+                    </div>
+                    <h2 id="lvlName" class="text-xl font-bold text-textmain mt-1">Rookie Observer</h2>
+                </div>
+                <div class="w-12 h-12 rounded-full border-2 border-secondary/20 flex items-center justify-center bg-blue-50 text-secondary shadow-sm">
+                    <i id="lvlIcon" data-lucide="shield" class="w-6 h-6"></i>
+                </div>
+            </div>
+            
+            <div class="w-full bg-bordercol rounded-full h-2.5 overflow-hidden mb-1">
+                <div id="lvlProgress" class="h-full bg-secondary transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="lvlQuote" class="text-xs text-textdim font-medium italic text-right">"Learn patience before profit."</p>
+        </header>
+        
+
+        <!-- ================= MAIN CONTENT AREA ================= -->
+        <main class="flex-1 overflow-y-auto pb-24 hidden" id="appMain">
+            
+            <!-- TAB 1: NEW TRADE (DASHBOARD) -->
+            <div id="tab-home" class="tab-content active p-4 space-y-4">
+
+                <!-- Trading Account / Pair Setup -->
+                <div class="bg-card border border-bordercol rounded-2xl p-4 shadow-premium fade-in">
+                    <h3 class="text-sm font-bold text-textdim mb-3 flex items-center gap-2 uppercase tracking-wide">
+                        <i data-lucide="building" class="w-4 h-4"></i> Trading Setup
+                    </h3>
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="text-xs font-semibold text-textdim mb-1 block">Broker Name</label>
+                            <input type="text" id="brokerName" onchange="saveSetup()" placeholder="e.g. Zimsoft" class="w-full bg-bg border border-bordercol rounded-xl px-3 py-2.5 text-sm font-bold text-textmain focus:border-secondary outline-none transition-all">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-xs font-semibold text-textdim mb-1 block">Trading Pair</label>
+                            <input type="text" id="currencyPair" onchange="saveSetup()" placeholder="e.g. Vol 75" class="w-full bg-bg border border-bordercol rounded-xl px-3 py-2.5 text-sm font-bold text-textmain focus:border-secondary outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Balance & Risk Manager -->
+                <div class="bg-card border border-bordercol rounded-2xl p-4 shadow-premium">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-bold text-textdim flex items-center gap-2 uppercase tracking-wide">
+                            <i data-lucide="wallet" class="w-4 h-4"></i> Capital Management
+                        </h3>
+                        <button onclick="showRules()" class="text-secondary hover:bg-blue-50 p-1.5 rounded-lg transition-colors">
+                            <i data-lucide="info" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Account Balance -->
+                        <div>
+                            <label class="text-xs font-semibold text-textdim mb-1 block">Total Balance ($)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-textdim font-bold">$</span>
+                                <input type="number" id="calcBalance" value="100.00" step="0.01" class="w-full bg-bg border border-bordercol rounded-xl pl-8 pr-4 py-3 text-lg font-bold text-textmain focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-all">
+                            </div>
+                        </div>
+
+                        <!-- 2-Way Risk Calc -->
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <label class="text-xs font-semibold text-textdim mb-1 block">Risk Amount ($)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2.5 text-textdim">$</span>
+                                    <input type="number" id="calcRiskAmount" placeholder="0.00" step="0.01" class="w-full bg-bg border border-bordercol rounded-xl pl-7 pr-3 py-2.5 font-bold text-dangerDark focus:border-danger outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-xs font-semibold text-textdim mb-1 block">Risk Percent (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="calcRiskPct" value="1" step="0.1" class="w-full bg-bg border border-bordercol rounded-xl pl-3 pr-7 py-2.5 font-bold text-secondary focus:border-secondary outline-none transition-all">
+                                    <span class="absolute right-3 top-2.5 text-textdim">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mandatory Checklist -->
+                <div class="bg-card border border-bordercol rounded-2xl p-4 shadow-premium">
+                    <h3 class="text-sm font-bold text-textdim mb-4 flex items-center gap-2 uppercase tracking-wide">
+                        <i data-lucide="list-checks" class="w-4 h-4"></i> Pre-Entry Checklist
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <!-- Item 1 -->
+                        <label class="check-wrap relative">
+                            <input type="checkbox" id="chk1" class="check-input" onchange="validateChecklist()">
+                            <div class="check-row rounded-xl p-3.5 flex items-center gap-3 transition-all">
+                                <div class="check-ui shadow-sm"><i data-lucide="check" class="w-4 h-4 text-white opacity-0 transition-opacity"></i></div>
+                                <span class="text-sm font-semibold text-textmain">Clear Structure / Trend</span>
+                            </div>
+                        </label>
+
+                        <!-- Item 2 -->
+                        <label class="check-wrap relative">
+                            <input type="checkbox" id="chk2" class="check-input" onchange="validateChecklist()">
+                            <div class="check-row rounded-xl p-3.5 flex items-center gap-3 transition-all">
+                                <div class="check-ui shadow-sm"><i data-lucide="check" class="w-4 h-4 text-white opacity-0 transition-opacity"></i></div>
+                                <span class="text-sm font-semibold text-textmain">Key levels marked</span>
+                            </div>
+                        </label>
+
+                        <!-- Item 3: Setup Choice -->
+                        <div class="border border-bordercol rounded-xl p-3.5 bg-bg">
+                            <p class="text-xs font-semibold text-textdim mb-2 uppercase">Select Setup Type</p>
+                            <div class="flex gap-2">
+                                <input type="radio" name="setupType" id="setupRejection" value="Rejection" class="setup-radio" onchange="validateChecklist()">
+                                <label for="setupRejection" class="setup-label flex-1 text-center py-2 rounded-lg text-sm transition-all shadow-sm">Rejection</label>
+                                
+                                <input type="radio" name="setupType" id="setupTrap" value="Trap" class="setup-radio" onchange="validateChecklist()">
+                                <label for="setupTrap" class="setup-label flex-1 text-center py-2 rounded-lg text-sm transition-all shadow-sm">Liquidity Trap</label>
+                            </div>
+                        </div>
+
+                        <!-- Item 4 -->
+                        <label class="check-wrap relative">
+                            <input type="checkbox" id="chk4" class="check-input" onchange="validateChecklist()">
+                            <div class="check-row rounded-xl p-3.5 flex items-center gap-3 transition-all">
+                                <div class="check-ui shadow-sm"><i data-lucide="check" class="w-4 h-4 text-white opacity-0 transition-opacity"></i></div>
+                                <span class="text-sm font-semibold text-textmain">M15/M5 Entry Confirmation</span>
+                            </div>
+                        </label>
+
+                        <!-- Item 5 -->
+                        <label class="check-wrap relative">
+                            <input type="checkbox" id="chk5" class="check-input" onchange="validateChecklist()">
+                            <div class="check-row rounded-xl p-3.5 flex items-center gap-3 transition-all">
+                                <div class="check-ui shadow-sm"><i data-lucide="check" class="w-4 h-4 text-white opacity-0 transition-opacity"></i></div>
+                                <span class="text-sm font-semibold text-textmain">Risk:Reward is > 1:2</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <button id="btnConfirmTrade" disabled class="mt-5 w-full bg-bordercol text-textdim font-bold rounded-xl px-4 py-4 transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+                        <i data-lucide="lock" class="w-5 h-5"></i> COMPLETE CHECKLIST
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: ACTIVE TRADES -->
+            <div id="tab-active" class="tab-content p-4">
+                <h3 class="text-lg font-bold text-textmain mb-4 flex items-center gap-2">
+                    <i data-lucide="activity" class="text-secondary w-5 h-5"></i> Active Trades
+                </h3>
+                <div id="activeTradesList" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 3: HISTORY -->
+            <div id="tab-history" class="tab-content p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-textmain flex items-center gap-2">
+                        <i data-lucide="book-open" class="text-secondary w-5 h-5"></i> Trade Journal
+                    </h3>
+                    <div class="text-right">
+                        <p class="text-xs text-textdim">Win Rate</p>
+                        <p id="histWinRate" class="text-sm font-bold text-primary">0%</p>
+                    </div>
+                </div>
+                <div id="historyList" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- TAB 4: ANALYTICS & BACKUP -->
+            <div id="tab-analytics" class="tab-content p-4">
+                <h3 class="text-lg font-bold text-textmain mb-4 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="text-secondary w-5 h-5"></i> Performance Analytics
+                </h3>
+                
+                <!-- Drawdown & Stats Card -->
+                <div class="bg-card border border-bordercol rounded-2xl p-4 shadow-premium mb-5">
+                    <div class="flex justify-between items-center pb-3 border-b border-bordercol">
+                        <span class="text-sm text-textdim font-semibold">Current Balance</span>
+                        <span id="statBalance" class="text-lg font-bold text-textmain">$0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-bordercol">
+                        <span class="text-sm text-textdim font-semibold">Peak Balance</span>
+                        <span id="statPeak" class="text-lg font-bold text-primary">$0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-bordercol">
+                        <span class="text-sm text-textdim font-semibold">Current Drawdown</span>
+                        <span id="statDrawdown" class="text-lg font-bold text-danger">0.00%</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-3">
+                        <span class="text-sm text-textdim font-semibold">Max Drawdown Limit</span>
+                        <div class="flex items-center gap-1">
+                            <input type="number" id="settingMaxDD" value="5" step="0.1" class="w-16 text-right bg-bg border border-bordercol rounded-lg px-2 py-1 text-sm font-bold text-textmain outline-none focus:border-secondary transition-colors">
+                            <span class="text-sm text-textdim font-bold">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup System Controls -->
+                <h3 class="text-sm font-bold text-textdim mb-3 uppercase tracking-wide">Data Management</h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button onclick="exportBackup()" class="bg-card border border-bordercol text-textmain font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]">
+                        <i data-lucide="download-cloud" class="w-5 h-5 text-secondary"></i> Export
+                    </button>
+                    <label class="bg-card border border-bordercol text-textmain font-bold rounded-xl py-4 flex items-center justify-center gap-2 shadow-sm transition-all hover:bg-gray-50 cursor-pointer active:scale-[0.98]">
+                        <i data-lucide="upload-cloud" class="w-5 h-5 text-primary"></i> Import
+                        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importBackup(event)" />
+                    </label>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ================= BOTTOM NAVIGATION ================= -->
+        <nav class="bg-card border-t border-bordercol fixed bottom-0 w-full max-w-md z-30 pb-safe hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" id="bottomNav">
+            <div class="flex justify-around items-center h-16">
+                <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center justify-center w-full h-full text-textdim transition-colors relative">
+                    <i data-lucide="home" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[10px] font-bold">New Trade</span>
+                    <div class="nav-indicator absolute top-0 w-8 h-1 bg-secondary rounded-b-md opacity-0 scale-0 transition-all"></div>
+                </button>
+                
+                <button onclick="switchTab('active')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textdim transition-colors relative">
+                    <div class="relative">
+                        <i data-lucide="target" class="w-5 h-5 mb-1"></i>
+                        <span id="activeBadge" class="absolute -top-1 -right-2 bg-danger text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                    </div>
+                    <span class="text-[10px] font-bold">Active</span>
+                    <div class="nav-indicator absolute top-0 w-8 h-1 bg-secondary rounded-b-md opacity-0 scale-0 transition-all"></div>
+                </button>
+
+                <button onclick="switchTab('history')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textdim transition-colors relative">
+                    <i data-lucide="book-open" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[10px] font-bold">Journal</span>
+                    <div class="nav-indicator absolute top-0 w-8 h-1 bg-secondary rounded-b-md opacity-0 scale-0 transition-all"></div>
+                </button>
+
+                <button onclick="switchTab('analytics')" class="nav-btn flex flex-col items-center justify-center w-full h-full text-textdim transition-colors relative">
+                    <i data-lucide="pie-chart" class="w-5 h-5 mb-1"></i>
+                    <span class="text-[10px] font-bold">Analytics</span>
+                    <div class="nav-indicator absolute top-0 w-8 h-1 bg-secondary rounded-b-md opacity-0 scale-0 transition-all"></div>
+                </button>
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- ================= MODALS & TOASTS ================= -->
+
+    <!-- Discipline Alert Modal -->
+    <div id="modalDiscipline" class="fixed inset-0 modal-overlay z-[110] flex items-center justify-center p-4">
+        <div class="modal-content bg-danger text-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+            <div class="w-16 h-16 rounded-full bg-white/20 mx-auto mb-4 flex items-center justify-center">
+                <i data-lucide="alert-triangle" class="w-8 h-8 text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">DISCIPLINE ALERT</h2>
+            <p class="text-sm text-white/90 mb-6" id="drawdownMsg">Maximum drawdown reached! You are down 0%. Step away from the terminal.</p>
+            <button onclick="closeDisciplineAlert()" class="w-full bg-white text-danger font-bold rounded-xl py-3 shadow-md hover:bg-gray-100 transition-all active:scale-[0.98]">I Understand</button>
+        </div>
+    </div>
+
+    <!-- Resolve Trade Modal -->
+    <div id="modalResolve" class="fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4">
+        <div class="modal-content bg-card rounded-2xl w-full max-w-sm p-6 shadow-2xl relative">
+            <h2 class="text-xl font-bold text-textmain mb-1">Resolve Trade</h2>
+            <p class="text-sm text-textdim mb-6" id="resolveSetupName">Setup: Rejection</p>
+            
+            <input type="hidden" id="resolveTradeId">
+
+            <label class="block text-xs font-semibold text-textdim mb-2 uppercase">Outcome Result ($)</label>
+            <div class="flex gap-3 mb-6">
+                <button id="btnMarkWin" class="flex-1 bg-bg border border-bordercol text-textmain font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-primary"></i> WIN
+                </button>
+                <button id="btnMarkLoss" class="flex-1 bg-bg border border-bordercol text-textmain font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="trending-down" class="w-5 h-5 text-danger"></i> LOSS
+                </button>
+            </div>
+            
+            <div id="pnlSection" class="hidden animate-slide-up mb-6">
+                <label class="block text-xs font-semibold text-textdim mb-1">Exact PnL Amount ($)</label>
+                <div class="relative">
+                    <span id="pnlSign" class="absolute left-4 top-3 font-bold text-lg">+</span>
+                    <input type="number" id="resolveAmount" placeholder="0.00" step="0.01" class="w-full bg-bg border border-bordercol rounded-xl pl-8 pr-4 py-3 text-lg font-bold text-textmain focus:border-secondary outline-none">
+                </div>
+                <p class="text-[10px] text-textdim mt-1 text-center">This will auto-update your main balance.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeResolveModal()" class="flex-1 bg-bg border border-bordercol text-textmain font-semibold py-3 rounded-xl">Cancel</button>
+                <button id="btnSaveResolve" disabled class="flex-1 bg-textmain text-white font-semibold py-3 rounded-xl opacity-50 cursor-not-allowed transition-opacity">Save Result</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="modalRules" class="fixed inset-0 modal-overlay z-[100] flex items-center justify-center p-4">
+        <div class="modal-content bg-card rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-lg font-bold text-textmain flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-secondary"></i> Trading Rules
+                </h2>
+                <button onclick="closeRules()" class="text-textdim hover:text-textmain bg-bg p-1.5 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-sm text-textmain mb-6">
+                <div class="flex gap-3 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-blue-500 shrink-0"></i>
+                    <span><strong>No wick = no trade.</strong> Wait for clear rejection.</span>
+                </div>
+                <div class="flex gap-3 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-blue-500 shrink-0"></i>
+                    <span><strong>Trade at levels only.</strong> Ignore the middle.</span>
+                </div>
+                <div class="flex gap-3 bg-amber-50 p-3 rounded-xl border border-amber-100">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 shrink-0"></i>
+                    <span><strong>Never move your stop loss.</strong> Accept the risk.</span>
+                </div>
+            </div>
+
+            <button onclick="factoryReset()" class="w-full text-danger border border-danger/20 bg-danger/5 py-3 rounded-xl font-semibold text-sm">Erase All Data (Factory Reset)</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-textmain text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 z-50 pointer-events-none">
+        <i data-lucide="check-circle" class="w-5 h-5 text-primary"></i>
+        <span id="toastMsg" class="font-medium text-sm">Action successful</span>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- PWA REGISTRATION (SINGLE FILE INJECTION) ---
+        const setupPWA = () => {
+            // 1. Inject Manifest dynamically to avoid 404s in single-file environments
+            const manifest = {
+                "name": "Zimsoft X Normal",
+                "short_name": "fxz",
+                "description": "Offline Trading Terminal",
+                "start_url": "./",
+                "display": "standalone",
+                "background_color": "#F8FAFC",
+                "theme_color": "#F8FAFC",
+                "icons": [{
+                    "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FFFFFF'/%3E%3Cpath d='M30 50 L50 30 L70 50 M50 30 L50 70' stroke='%233B82F6' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+            // 2. Inject Service Worker Safely 
+            if ('serviceWorker' in navigator) {
+                // Prevent "URL protocol not supported" errors in blob/data/iframe environments (like the Canvas Preview)
+                if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                    window.addEventListener('load', () => {
+                        const swCode = `
+                            const CACHE_NAME = 'zx-offline-v3';
+                            self.addEventListener('install', e => self.skipWaiting());
+                            self.addEventListener('activate', e => self.clients.claim());
+                            self.addEventListener('fetch', e => {
+                                e.respondWith(caches.match(e.request).then(res => res || fetch(e.request).catch(() => caches.match('./'))));
+                            });
+                        `;
+                        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                        navigator.serviceWorker.register(URL.createObjectURL(swBlob))
+                            .then(reg => console.log('Service Worker registered successfully!'))
+                            .catch(err => console.warn('Service Worker registration failed:', err));
+                    });
+                } else {
+                    console.log('Service Worker skipped: Environment protocol (' + window.location.protocol + ') does not support Service Workers. The app will still function normally.');
+                }
+            }
+        };
+        setupPWA();
+
+        // --- DATA & STATE ---
+        const levelData = [
+            { name: "Rookie Observer", q: "Learn patience before profit." },
+            { name: "Chart Reader", q: "See the structure, feel the trend." },
+            { name: "Wick Hunter", q: "No wick, no trade." },
+            { name: "Setup Spotter", q: "Wait for the trap to trigger." },
+            { name: "Discipline Student", q: "Rules over emotions." },
+            { name: "Synthetic Elite", q: "Precision execution only." }
+        ];
+
+        let state = {
+            isAuth: false,
+            balance: 100.00,
+            peakBalance: 100.00,
+            maxDrawdownLimit: 5.0, // 5% limit by default
+            broker: "",
+            pair: "",
+            history: [],       // Completed trades
+            activeTrades: [],  // Pending trades
+            streak: 0
+        };
+
+        const loadState = () => {
+            const saved = localStorage.getItem('zx_state_v3');
+            if(saved) state = { ...state, ...JSON.parse(saved) };
+            
+            // Initialization checks
+            if(!state.peakBalance || state.balance > state.peakBalance) {
+                state.peakBalance = state.balance;
+            }
+        };
+        const saveState = () => localStorage.setItem('zx_state_v3', JSON.stringify(state));
+
+        // --- UI ELEMENTS ---
+        const DOM = {
+            loginScn: document.getElementById('loginScreen'),
+            appHeader: document.getElementById('appHeader'),
+            appMain: document.getElementById('appMain'),
+            bottomNav: document.getElementById('bottomNav'),
+            
+            bal: document.getElementById('calcBalance'),
+            rAmt: document.getElementById('calcRiskAmount'),
+            rPct: document.getElementById('calcRiskPct'),
+            
+            chkInputs: document.querySelectorAll('.check-input'),
+            setupRadios: document.querySelectorAll('.setup-radio'),
+            btnConfirm: document.getElementById('btnConfirmTrade'),
+            
+            activeList: document.getElementById('activeTradesList'),
+            historyList: document.getElementById('historyList'),
+            activeBadge: document.getElementById('activeBadge')
+        };
+
+        let tempResolveResult = null; // 'win' or 'loss'
+
+        // --- CORE LOGIC ---
+
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            if(document.getElementById('loginPassword').value === 'zimsoft123') {
+                playHaptic();
+                state.isAuth = true; saveState(); showApp();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+                if(navigator.vibrate) navigator.vibrate([100,50,100]);
+            }
+        });
+
+        const showApp = () => {
+            DOM.loginScn.style.opacity = '0';
+            setTimeout(() => {
+                DOM.loginScn.classList.add('hidden');
+                DOM.appHeader.classList.remove('hidden');
+                DOM.appMain.classList.remove('hidden');
+                DOM.bottomNav.classList.remove('hidden');
+                updateUI();
+            }, 300);
+        };
+
+        // Trading Setup Saves
+        window.saveSetup = () => {
+            state.broker = document.getElementById('brokerName').value;
+            state.pair = document.getElementById('currencyPair').value;
+            saveState();
+        };
+
+        // Drawdown Tracker
+        const evaluateDrawdownAndSave = (manualUpdate = false) => {
+            if (state.balance > state.peakBalance) {
+                state.peakBalance = state.balance;
+            }
+
+            let currentDrawdown = 0;
+            if (state.peakBalance > 0) {
+                currentDrawdown = ((state.peakBalance - state.balance) / state.peakBalance) * 100;
+            }
+
+            // If a manual balance edit happens, we re-evaluate but maybe don't alert instantly unless trading triggered it. 
+            // Alert logic
+            if (currentDrawdown >= state.maxDrawdownLimit && currentDrawdown > 0 && !manualUpdate) {
+                document.getElementById('drawdownMsg').innerText = `Maximum drawdown reached! You are down ${currentDrawdown.toFixed(2)}%. Step away from the terminal.`;
+                document.getElementById('modalDiscipline').classList.add('active');
+                if(navigator.vibrate) navigator.vibrate([200,100,200,100,200]);
+            }
+
+            saveState();
+        };
+
+        // Risk Calculator (2-Way Binding)
+        const updateFromBalanceOrPct = (e) => {
+            let b = parseFloat(DOM.bal.value) || 0;
+            let p = parseFloat(DOM.rPct.value) || 0;
+            let amt = b * (p / 100);
+            DOM.rAmt.value = amt > 0 ? amt.toFixed(2) : '';
+            
+            // Treat manual balance input as absolute state update
+            state.balance = b;
+            evaluateDrawdownAndSave(true); // pass true for manual override
+            updateAnalyticsUI();
+        };
+
+        const updateFromAmount = () => {
+            let b = parseFloat(DOM.bal.value) || 0;
+            let amt = parseFloat(DOM.rAmt.value) || 0;
+            if(b > 0 && amt > 0) {
+                let p = (amt / b) * 100;
+                DOM.rPct.value = p.toFixed(2);
+            }
+        };
+
+        DOM.bal.addEventListener('input', updateFromBalanceOrPct);
+        DOM.rPct.addEventListener('input', updateFromBalanceOrPct);
+        DOM.rAmt.addEventListener('input', updateFromAmount);
+
+        // Checklist Logic
+        window.validateChecklist = () => {
+            const allChecked = Array.from(DOM.chkInputs).every(chk => chk.checked);
+            const setupChosen = Array.from(DOM.setupRadios).some(r => r.checked);
+            
+            if(allChecked && setupChosen) {
+                DOM.btnConfirm.disabled = false;
+                DOM.btnConfirm.className = "mt-5 w-full bg-primary text-white font-bold rounded-xl px-4 py-4 transition-all flex items-center justify-center gap-2 shadow-premium hover:bg-primaryDark active:scale-[0.98]";
+                DOM.btnConfirm.innerHTML = `<i data-lucide="zap" class="w-5 h-5"></i> CONFIRM TRADE`;
+            } else {
+                DOM.btnConfirm.disabled = true;
+                DOM.btnConfirm.className = "mt-5 w-full bg-bordercol text-textdim font-bold rounded-xl px-4 py-4 transition-all flex items-center justify-center gap-2 cursor-not-allowed";
+                DOM.btnConfirm.innerHTML = `<i data-lucide="lock" class="w-5 h-5"></i> COMPLETE CHECKLIST`;
+            }
+            lucide.createIcons();
+        };
+
+        // Confirming a Trade
+        DOM.btnConfirm.addEventListener('click', () => {
+            if(DOM.btnConfirm.disabled) return;
+            playHaptic('success');
+            
+            const setupType = Array.from(DOM.setupRadios).find(r => r.checked).value;
+            const riskAmt = parseFloat(DOM.rAmt.value) || 0;
+            
+            const newTrade = {
+                id: Date.now().toString(),
+                date: new Date().toLocaleString(),
+                setup: setupType,
+                risk: riskAmt,
+                status: 'active'
+            };
+            
+            state.activeTrades.push(newTrade);
+            saveState();
+            
+            // Reset Form
+            DOM.chkInputs.forEach(c => c.checked = false);
+            DOM.setupRadios.forEach(c => c.checked = false);
+            validateChecklist();
+            
+            showToast("Trade added to Active queue!");
+            updateUI();
+            switchTab('active');
+        });
+
+        // Tabs
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+            playHaptic();
+        };
+
+        // Settings Listener
+        document.getElementById('settingMaxDD').addEventListener('change', (e) => {
+            state.maxDrawdownLimit = parseFloat(e.target.value) || 5;
+            saveState();
+            showToast("Drawdown limit updated");
+        });
+
+        // Update UI Loop
+        const updateUI = () => {
+            DOM.bal.value = state.balance.toFixed(2);
+            document.getElementById('brokerName').value = state.broker || '';
+            document.getElementById('currencyPair').value = state.pair || '';
+            document.getElementById('settingMaxDD').value = state.maxDrawdownLimit || 5;
+            
+            updateAnalyticsUI();
+
+            // Active Badges
+            if(state.activeTrades.length > 0) {
+                DOM.activeBadge.innerText = state.activeTrades.length;
+                DOM.activeBadge.classList.remove('hidden');
+            } else {
+                DOM.activeBadge.classList.add('hidden');
+            }
+
+            // Render Active List
+            DOM.activeList.innerHTML = state.activeTrades.length === 0 
+                ? `<div class="text-center p-8 border-2 border-dashed border-bordercol rounded-2xl text-textdim font-medium"><i data-lucide="sleep" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>No active trades.</div>`
+                : state.activeTrades.map(t => `
+                    <div class="bg-card border border-bordercol rounded-xl p-4 shadow-sm flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-textmain">${t.setup}</p>
+                            <p class="text-xs text-textdim mt-1">Risk: $${t.risk.toFixed(2)}</p>
+                        </div>
+                        <button onclick="openResolve('${t.id}')" class="bg-secondary/10 text-secondary font-bold text-sm px-4 py-2 rounded-lg hover:bg-secondary hover:text-white transition-colors">
+                            Resolve
+                        </button>
+                    </div>
+                `).join('');
+
+            // Render History List
+            const wins = state.history.filter(t => t.result === 'win').length;
+            const total = state.history.length;
+            document.getElementById('histWinRate').innerText = total === 0 ? '0%' : `${Math.round((wins/total)*100)}%`;
+
+            DOM.historyList.innerHTML = state.history.length === 0
+                ? `<div class="text-center p-8 text-textdim text-sm">Your journey starts here.</div>`
+                : state.history.slice().reverse().map(t => `
+                    <div class="bg-card border border-bordercol rounded-xl p-3 shadow-sm flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center ${t.result === 'win' ? 'bg-primary/10 text-primary' : 'bg-danger/10 text-danger'}">
+                            <i data-lucide="${t.result === 'win' ? 'trending-up' : 'trending-down'}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-sm text-textmain">${t.setup}</p>
+                            <p class="text-[10px] text-textdim">${t.date}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-sm ${t.result === 'win' ? 'text-primary' : 'text-danger'}">
+                                ${t.result === 'win' ? '+' : '-'}$${Math.abs(t.pnl).toFixed(2)}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Levels update
+            const levelNum = Math.min(levelData.length, Math.floor(total / 3) + 1);
+            const lData = levelData[levelNum - 1] || levelData[levelData.length -1];
+            document.getElementById('lvlNumber').innerText = levelNum;
+            document.getElementById('lvlName').innerText = lData.name;
+            
+            const progress = total === 0 ? 0 : ((total % 3) / 3) * 100;
+            document.getElementById('lvlProgress').style.width = `${progress}%`;
+
+            lucide.createIcons();
+        };
+
+        const updateAnalyticsUI = () => {
+            document.getElementById('statBalance').innerText = `$${state.balance.toFixed(2)}`;
+            document.getElementById('statPeak').innerText = `$${state.peakBalance.toFixed(2)}`;
+            let dd = 0;
+            if(state.peakBalance > 0) dd = ((state.peakBalance - state.balance) / state.peakBalance) * 100;
+            
+            const statDd = document.getElementById('statDrawdown');
+            statDd.innerText = `${dd.toFixed(2)}%`;
+            if(dd >= state.maxDrawdownLimit) statDd.className = "text-lg font-bold text-danger";
+            else statDd.className = "text-lg font-bold text-primary";
+        };
+
+        // --- RESOLVE LOGIC ---
+        window.openResolve = (id) => {
+            const trade = state.activeTrades.find(t => t.id === id);
+            if(!trade) return;
+            
+            document.getElementById('resolveTradeId').value = id;
+            document.getElementById('resolveSetupName').innerText = `Setup: ${trade.setup} | Risk: $${trade.risk}`;
+            document.getElementById('resolveAmount').value = '';
+            document.getElementById('pnlSection').classList.add('hidden');
+            
+            // Reset Buttons
+            const btnW = document.getElementById('btnMarkWin');
+            const btnL = document.getElementById('btnMarkLoss');
+            btnW.className = "flex-1 bg-bg border border-bordercol text-textmain font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all";
+            btnL.className = "flex-1 bg-bg border border-bordercol text-textmain font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all";
+            
+            tempResolveResult = null;
+            document.getElementById('btnSaveResolve').disabled = true;
+            document.getElementById('btnSaveResolve').classList.add('opacity-50');
+
+            document.getElementById('modalResolve').classList.add('active');
+        };
+
+        const selectResult = (res) => {
+            tempResolveResult = res;
+            const btnW = document.getElementById('btnMarkWin');
+            const btnL = document.getElementById('btnMarkLoss');
+            
+            if(res === 'win') {
+                btnW.className = "flex-1 bg-primary/10 border-2 border-primary text-primary font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all scale-105";
+                btnL.className = "flex-1 bg-bg border border-bordercol text-textdim font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all opacity-50";
+                document.getElementById('pnlSign').innerText = '+';
+                document.getElementById('pnlSign').className = "absolute left-4 top-3 font-bold text-lg text-primary";
+            } else {
+                btnL.className = "flex-1 bg-danger/10 border-2 border-danger text-danger font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all scale-105";
+                btnW.className = "flex-1 bg-bg border border-bordercol text-textdim font-bold rounded-xl py-3 flex items-center justify-center gap-2 transition-all opacity-50";
+                document.getElementById('pnlSign').innerText = '-';
+                document.getElementById('pnlSign').className = "absolute left-4 top-3 font-bold text-lg text-danger";
+            }
+
+            document.getElementById('pnlSection').classList.remove('hidden');
+            checkResolveReady();
+        };
+
+        document.getElementById('btnMarkWin').onclick = () => selectResult('win');
+        document.getElementById('btnMarkLoss').onclick = () => selectResult('loss');
+
+        const checkResolveReady = () => {
+            const amt = parseFloat(document.getElementById('resolveAmount').value);
+            const btnSave = document.getElementById('btnSaveResolve');
+            if(tempResolveResult && !isNaN(amt) && amt >= 0) {
+                btnSave.disabled = false;
+                btnSave.classList.remove('opacity-50');
+                btnSave.classList.add('bg-primary', 'hover:bg-primaryDark');
+            } else {
+                btnSave.disabled = true;
+                btnSave.classList.add('opacity-50');
+                btnSave.classList.remove('bg-primary', 'hover:bg-primaryDark');
+            }
+        };
+        document.getElementById('resolveAmount').addEventListener('input', checkResolveReady);
+
+        document.getElementById('btnSaveResolve').onclick = () => {
+            const id = document.getElementById('resolveTradeId').value;
+            const amt = parseFloat(document.getElementById('resolveAmount').value);
+            const tradeIndex = state.activeTrades.findIndex(t => t.id === id);
+            
+            if(tradeIndex > -1) {
+                const trade = state.activeTrades[tradeIndex];
+                trade.result = tempResolveResult;
+                trade.pnl = tempResolveResult === 'win' ? amt : -amt;
+                
+                // Update Balance
+                state.balance += trade.pnl;
+                evaluateDrawdownAndSave(); // Checks drawdown strictly after a trade resolution
+                
+                // Move to history
+                state.history.push(trade);
+                state.activeTrades.splice(tradeIndex, 1);
+                
+                updateFromBalanceOrPct(); // Recalc risk input fields based on new balance
+                updateUI();
+                closeResolveModal();
+                showToast(`Trade closed: ${trade.pnl > 0 ? '+' : ''}$${trade.pnl.toFixed(2)}`);
+                playHaptic('success');
+            }
+        };
+
+        window.closeResolveModal = () => document.getElementById('modalResolve').classList.remove('active');
+        window.closeDisciplineAlert = () => document.getElementById('modalDiscipline').classList.remove('active');
+        
+        // --- BACKUP SYSTEM ---
+        window.exportBackup = () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `zimsoft_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast("Backup exported successfully!");
+        };
+
+        window.importBackup = (event) => {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    state = { ...state, ...importedData };
+                    saveState();
+                    updateUI();
+                    showToast("Backup restored successfully!");
+                } catch(err) {
+                    showToast("Error reading backup file!");
+                }
+            };
+            if(event.target.files.length > 0) {
+                fileReader.readAsText(event.target.files[0]);
+            }
+        };
+
+        // Settings / Rules
+        window.showRules = () => document.getElementById('modalRules').classList.add('active');
+        window.closeRules = () => document.getElementById('modalRules').classList.remove('active');
+        window.factoryReset = () => {
+            if(confirm("Erase all offline data? This cannot be undone.")) {
+                localStorage.removeItem('zx_state_v3');
+                location.reload();
+            }
+        };
+
+        // Utilities
+        const showToast = (msg) => {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        };
+
+        const playHaptic = (type = 'click') => {
+            try {
+                if(navigator.vibrate) {
+                    if(type === 'success') navigator.vibrate([30, 50, 30]);
+                    else navigator.vibrate(15);
+                }
+            } catch(e) {}
+        };
+
+        // --- INIT ---
+        window.onload = () => {
+            loadState();
+            if(state.isAuth) showApp();
+        };
+    </script>
+</body>
+</html>
